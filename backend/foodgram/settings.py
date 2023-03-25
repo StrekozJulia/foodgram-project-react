@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+from datetime import timedelta
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,18 +26,28 @@ SECRET_KEY = '7u_czp0ez*!o@byw1p#jpq4@=t0l3d!nyfk4=k@jfmcp&vb&c6'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'recipes.apps.RecipesConfig',
+    'users.apps.UsersConfig',
+    'api.apps.ApiConfig',
+    'core.apps.CoreConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -76,11 +87,11 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'foodgram_db',
-        'USER': 'juliadomanova',
-        'PASSWORD': 'StrekoFoodgramDB13!',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'StrekoPostgres13!',
         'HOST': 'localhost',
-        'PORT': '5432',
+        'PORT': '',
     }
 }
 
@@ -103,6 +114,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'users.CustomUser'
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
@@ -122,3 +134,27 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny', 
+    ],
+
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 6,
+}
+
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+}
+
+
+SIMPLE_JWT = {
+   'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+   'AUTH_HEADER_TYPES': ('Bearer',),
+} 

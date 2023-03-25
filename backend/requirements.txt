@@ -1,2 +1,6 @@
 django==2.2.16
-psycopg2-binary==2.9.5
+psycopg2-binary==2.8.6
+djangorestframework==3.12.4
+djangorestframework-simplejwt==4.7.2
+pillow
+djoser==2.1.0
