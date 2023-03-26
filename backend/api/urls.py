@@ -1,20 +1,20 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from djoser.views import UserViewSet
 
-from .views import CustomUserViewSet
-                        # SignUp,
-#                     TitleViewSet, UsersViewSet, ReviewViewSet, CommentViewSet)
+from .views import (CustomUserViewSet,
+                    TagViewSet,
+                    IngredientViewSet,
+                    RecipeViewSet)
 
 
 app_name = 'api'
 
 router = DefaultRouter()
 
-# router_v1.register('titles', TitleViewSet, basename='titles')
-# router_v1.register('categories', CategoryViewSet, basename='categories')
-# router_v1.register('genres', GenreViewSet, basename='genres')
 router.register('users', CustomUserViewSet, basename='users')
+router.register('tags', TagViewSet, basename='tags')
+router.register('ingredients', IngredientViewSet, basename='ingredients')
+router.register('recipes', RecipeViewSet, basename='recipes')
 # router_v1.register(
 #     r'titles/(?P<title_id>\d+)/reviews',
 #     ReviewViewSet,
@@ -27,11 +27,6 @@ router.register('users', CustomUserViewSet, basename='users')
 # )
 
 urlpatterns = [
-    # path('', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
-    # path('auth/token/login/', TokenCreateView.as_view(), name="login"),
-    # path('auth/token/logout/', TokenDestroyView.as_view(), name="logout"),
-    # path('auth/token/', TokenCreateView.as_view(), name='login'),
-    # path('auth/signup/', SignUp.as_view(), name='signup'),
     path('', include(router.urls)),
 ]

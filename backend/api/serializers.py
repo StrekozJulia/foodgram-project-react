@@ -1,13 +1,12 @@
 # import datetime
 from rest_framework import serializers
-# from rest_framework.relations import SlugRelatedField
+from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueValidator
-# from django.contrib.auth import get_user_model
-# import base64
-# from django.core.files.base import ContentFile
+import base64
+from django.core.files.base import ContentFile
 
-# from recipes.models import Recipe, Ingredient
 from users.models import CustomUser
+from recipes.models import Tag, Ingredient, Recipe
 from .validators import UsernameValidator
 
 
@@ -50,65 +49,33 @@ class ChangePasswordSerializer(serializers.Serializer):
     current_password = serializers.CharField(required=True)
 
 
-# class UserProfileSerializer(CustomUsersSerializer):
+class TagSerializer(serializers.ModelSerializer):
 
-#     class Meta:
-#         model = CustomUser
-#         fields = (
-#             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
-#         )
-#         read_only_fields = ('role',)
+    class Meta:
+        fields = '__all__'
+        model = Tag
 
 
-# class SingUpSerializer(serializers.Serializer):
+class IngredientSerializer(serializers.ModelSerializer):
 
-#     email = serializers.EmailField(
-#         required=True,
-#     )
-#     username = serializers.CharField(
-#         required=True,
-#     )
-
-#     def validate_username(self, value):
-#         if value == 'me':
-#             raise serializers.ValidationError(
-#                 "Имя пользователя не может быть 'me'"
-#             )
-#         return value
-
-#     def validate(self, attrs):
-#         if User.object.filter(
-#                 username=attrs.get('username'),
-#                 email=attrs.get('email')).exists():
-#             pass
-#         elif (User.object.filter(username=attrs.get('username')).exists()
-#                 and not User.object.filter(email=attrs.get('email')).exists()):
-#             raise serializers.ValidationError(
-#                 "Пользователь с таким username уже есть."
-#             )
-#         elif (User.object.filter(email=attrs.get('email')).exists()
-#                 and not User.object.filter(
-#                     username=attrs.get('username')).exists()):
-#             raise serializers.ValidationError(
-#                 "Пользователь с таким email уже есть."
-#             )
-#         return attrs
+    class Meta:
+        fields = '__all__'
+        model = Ingredient
 
 
+class Base64ImageField(serializers.ImageField):
+    def to_internal_value(self, data):
+        if isinstance(data, str) and data.startswith('data:image'):
+            format, imgstr = data.split(';base64,')
+            ext = format.split('/')[-1]
+            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+        return super().to_internal_value(data)
 
-# class Base64ImageField(serializers.ImageField):
-#     def to_internal_value(self, data):
-#         if isinstance(data, str) and data.startswith('data:image'):
-#             format, imgstr = data.split(';base64,')
-#             ext = format.split('/')[-1]
-#             data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-#         return super().to_internal_value(data)
 
+class RecipeSerializer(serializers.ModelSerializer):
+    author = SlugRelatedField(slug_field='username', read_only=True)
+    image = Base64ImageField(required=True, allow_null=True)
 
-# class RecipeSerializer(serializers.ModelSerializer):
-#     author = SlugRelatedField(slug_field='username', read_only=True)
-#     image = Base64ImageField(required=False, allow_null=True)
-
-#     class Meta:
-#         fields = '__all__'
-#         model = Recipe
+    class Meta:
+        fields = '__all__'
+        model = Recipe

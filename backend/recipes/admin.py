@@ -8,8 +8,15 @@ class IngredientInline(admin.StackedInline):
 
 class RecipeAdmin(admin.ModelAdmin):
     inlines = [IngredientInline]
-    # list_display = ['name']
+    list_display = ['name', 'author']
+
+class TagAdmin(admin.ModelAdmin):
+    list_display = ['name',]
+
+class IngredientAdmin(admin.ModelAdmin):
+    list_display = ['name', 'measurement_unit']
+    list_filter = ['name',]
 
 admin.site.register(Recipe, RecipeAdmin)
-admin.site.register(Ingredient)
-admin.site.register(Tag)
+admin.site.register(Ingredient, IngredientAdmin)
+admin.site.register(Tag, TagAdmin)

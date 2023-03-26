@@ -12,15 +12,19 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-# from reviews.models import Category, Genre, Review, Title
+from recipes.models import Tag, Ingredient, Recipe
 from users.models import CustomUser
-from core.mixins import UserMixin
-from .permissions import UserPermission
+from core.mixins import UserMixin, ReadOnlyMixin, RecipeMixin
+from .permissions import UserPermission, RecipePermission
 
 # from .filters import TitleFilter
 # from .permissions import (AdminOrReadOnly, IsAdmin,
 #                           IsAuthorAdminModeratorOrReadOnly)
-from .serializers import CustomUserSerializer, ChangePasswordSerializer
+from .serializers import (CustomUserSerializer,
+                          ChangePasswordSerializer,
+                          TagSerializer,
+                          IngredientSerializer,
+                          RecipeSerializer)
 
 
 class CustomUserViewSet(UserMixin):
@@ -46,4 +50,23 @@ class CustomUserViewSet(UserMixin):
             self.get_object.save()
             return Response(status=status.HTTP_205_RESET_CONTENT)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
+
+class TagViewSet(ReadOnlyMixin):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    pagination_class = None
+
+
+class IngredientViewSet(ReadOnlyMixin):
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    pagination_class = None
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+
+
+class RecipeViewSet(RecipeMixin):
+    queryset = Recipe.objects.all()
+    serializer_class = RecipeSerializer
+    permission_classes = [RecipePermission,]
