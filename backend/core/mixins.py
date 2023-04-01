@@ -14,10 +14,13 @@ class ReadOnlyMixin(mixins.ListModelMixin,
     pass
 
 
-class RecipeMixin(mixins.ListModelMixin,
-                  mixins.CreateModelMixin,
-                  mixins.RetrieveModelMixin,
-                  mixins.UpdateModelMixin,
-                  mixins.DestroyModelMixin,
-                  viewsets.GenericViewSet):
+class ListMixin(mixins.ListModelMixin,
+                viewsets.GenericViewSet):
+    pass
+
+
+class CreateDestroyMixin(
+        mixins.CreateModelMixin,
+        mixins.DestroyModelMixin,
+        viewsets.GenericViewSet):
     pass

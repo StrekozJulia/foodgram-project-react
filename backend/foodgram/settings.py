@@ -29,6 +29,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
+    'backend',
 ]
 
 
@@ -46,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_filters',
     'rest_framework.authtoken',
     'djoser',
 ]
@@ -92,6 +94,12 @@ DATABASES = {
         'PASSWORD': 'StrekoPostgres13!',
         'HOST': 'localhost',
         'PORT': '',
+        # 'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
+        # 'NAME': os.getenv('DB_NAME', default='postgres'),
+        # 'USER': os.getenv('POSTGRES_USER', default='postgres'),
+        # 'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='StrekoPostgres13!'),
+        # 'HOST': os.getenv('DB_HOST', default='db'),
+        # 'PORT': os.getenv('DB_PORT', default='5432')
     }
 }
 
@@ -130,10 +138,11 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.2/howto/static-files/
-
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -147,6 +156,8 @@ REST_FRAMEWORK = {
 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 6,
+
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
 
 DJOSER = {
@@ -157,4 +168,4 @@ DJOSER = {
 SIMPLE_JWT = {
    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
    'AUTH_HEADER_TYPES': ('Bearer',),
-} 
+}

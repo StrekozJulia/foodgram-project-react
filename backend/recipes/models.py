@@ -1,6 +1,4 @@
 from django.db import models
-
-from django.db import models
 from users.models import CustomUser
 
 
@@ -8,6 +6,7 @@ NAME_LEN = 200
 SLUG_LEN = 200
 HEX_LEN = 7
 UNIT_LEN = 200
+
 
 class Ingredient(models.Model):
     name = models.CharField(
@@ -31,7 +30,7 @@ class Ingredient(models.Model):
 
 class Tag(models.Model):
     name = models.CharField(
-        'Название', 
+        'Название',
         help_text='Введите название тэга',
         unique=True,
         blank=False,
@@ -57,7 +56,7 @@ class Tag(models.Model):
 
     class Meta:
         ordering = ['name']
-    
+
     def __str__(self):
         return f'{self.name}'
 
@@ -66,22 +65,22 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient,
         through='RecipeIngredient',
+        through_fields=('recipe', 'ingredient'),
+        related_name='recipes',
         verbose_name='Ингредиенты',
         help_text='Выберите ингредиенты и их количество',
         blank=False,
-        null=False,
     )
     tags = models.ManyToManyField(
         Tag,
         verbose_name="Тэги",
         help_text="Выберите тэги",
         blank=False,
-        null=False
     )
     image = models.ImageField(
         'Иллюстрация',
         help_text='Вставьте изображение готового блюда',
-        upload_to='data/images/',
+        # upload_to='data/images/',
         blank=False,
         null=False
     )
@@ -113,20 +112,95 @@ class Recipe(models.Model):
         blank=False,
         null=False,
     )
+    favorers = models.ManyToManyField(
+        CustomUser,
+        through='Favorite',
+        through_fields=('favorite', 'favorer'),
+        related_name='favorites',
+        verbose_name='Избранные рецепты',
+        help_text='Выберите избранные рецепты',
+        blank=True,
+    )
+    buyers = models.ManyToManyField(
+        CustomUser,
+        through='Cart',
+        through_fields=('purchase', 'buyer'),
+        related_name='purchases',
+        verbose_name='Список рецептов в корзине',
+        help_text='Выберите рецепты для покупки',
+        blank=True,
+    )
 
     def __str__(self):
         return f'Рецепт "{self.name}"'
 
 
 class RecipeIngredient(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='recipe_ingredient'
+    )
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+        related_name='recipe_ingredient'
+    )
     amount = models.IntegerField(default=1)
 
     class Meta:
         constraints = [models.UniqueConstraint(
-            fields=['recipe', 'ingredient'], name='unique_recipe_ingredient'
+            fields=['recipe', 'ingredient'],
+            name='unique_recipe_ingredient'
         )]
 
     def __str__(self):
         return f'{self.recipe} {self.ingredient}'
+
+
+class Favorite(models.Model):
+    favorer = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        verbose_name='Пользователь',
+        related_name='favorer',
+        blank=False,
+        null=False
+    )
+    favorite = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        verbose_name='Избранный рецепт',
+        related_name='favorite',
+        blank=False,
+        null=False
+    )
+
+    class Meta:
+        constraints = [models.UniqueConstraint(
+            fields=['favorer', 'favorite'], name='unique_favorite'
+        )]
+
+
+class Cart(models.Model):
+    buyer = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        verbose_name='Покупатель',
+        related_name='buyer',
+        blank=False,
+        null=False
+    )
+    purchase = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        verbose_name='Рецепт для покупки',
+        related_name='purchase',
+        blank=False,
+        null=False
+    )
+
+    class Meta:
+        constraints = [models.UniqueConstraint(
+            fields=['buyer', 'purchase'], name='unique_purchase'
+        )]
