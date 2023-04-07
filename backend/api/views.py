@@ -1,6 +1,6 @@
 from django.http import FileResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Exists, OuterRef, Prefetch, Case, When, BooleanField, Value
+from django.db.models import Exists, OuterRef, Prefetch, BooleanField, Value
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.generics import get_object_or_404
@@ -11,16 +11,18 @@ from users.models import CustomUser, Follow
 from core.mixins import UserMixin, ReadOnlyMixin, CreateDestroyMixin, ListMixin
 from .permissions import UserPermission, RecipePermission
 from .filters import RecipeFilter, IngredientSearchFilter
-from .serializers import (CustomUserSerializer,
-                          ChangePasswordSerializer,
-                          TagSerializer,
-                          IngredientSerializer,
-                          ReadRecipeSerializer,
-                          WriteRecipeSerializer,
-                          SubscribeSerializer,
-                          FollowSerializer,
-                          FavoriteSerializer,
-                          CartSerializer)
+from .serializers import (
+    CartSerializer,
+    CustomUserSerializer,
+    ChangePasswordSerializer,
+    FavoriteSerializer,
+    FollowSerializer,
+    IngredientSerializer,
+    ReadRecipeSerializer,
+    SubscribeSerializer,
+    TagSerializer,
+    WriteRecipeSerializer,
+)
 
 
 class CustomUserViewSet(UserMixin):

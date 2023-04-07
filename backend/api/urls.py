@@ -11,7 +11,6 @@ from .views import (CustomUserViewSet,
                     CartViewSet,
                     download_purchase_list)
 
-
 app_name = 'api'
 
 router = DefaultRouter()
