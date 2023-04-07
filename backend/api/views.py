@@ -1,4 +1,5 @@
 from core.mixins import CreateDestroyMixin, ListMixin, ReadOnlyMixin, UserMixin
+from django.db import transaction
 from django.db.models import BooleanField, Exists, OuterRef, Prefetch, Value
 from django.http import FileResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -144,6 +145,7 @@ class SubscribeViewSet(CreateDestroyMixin):
                 following=OuterRef('pk'))
             ))
 
+    @transaction.atomic
     def perform_create(self, serializer):
         user_id = self.kwargs.get("user_id")
         authors = self.get_user_queryset()
@@ -178,6 +180,7 @@ class FavoriteViewSet(CreateDestroyMixin):
     serializer_class = FavoriteSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
+    @transaction.atomic
     def perform_create(self, serializer):
         recipe_id = self.kwargs.get("recipe_id")
         favorite = get_object_or_404(Recipe, pk=recipe_id)
@@ -212,6 +215,7 @@ class CartViewSet(CreateDestroyMixin):
     serializer_class = CartSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
+    @transaction.atomic
     def perform_create(self, serializer):
         recipe_id = self.kwargs.get("recipe_id")
         purchase = get_object_or_404(Recipe, pk=recipe_id)
