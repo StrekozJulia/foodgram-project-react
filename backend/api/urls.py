@@ -8,7 +8,8 @@ from .views import (CustomUserViewSet,
                     SubscribeViewSet,
                     SubscriptionsViewSet,
                     FavoriteViewSet,
-                    CartViewSet)
+                    CartViewSet,
+                    download_purchase_list)
 
 
 app_name = 'api'
@@ -35,5 +36,6 @@ router.register(r'recipes/(?P<recipe_id>\d+)/shopping_cart',
 
 urlpatterns = [
     path('auth/', include('djoser.urls.authtoken')),
+    path('recipes/download_shopping_cart/', download_purchase_list),
     path('', include(router.urls)),
 ]

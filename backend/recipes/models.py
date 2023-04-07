@@ -62,6 +62,7 @@ class Tag(models.Model):
 
 
 class Recipe(models.Model):
+    pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
     ingredients = models.ManyToManyField(
         Ingredient,
         through='RecipeIngredient',
@@ -80,7 +81,6 @@ class Recipe(models.Model):
     image = models.ImageField(
         'Иллюстрация',
         help_text='Вставьте изображение готового блюда',
-        # upload_to='data/images/',
         blank=False,
         null=False
     )
@@ -130,9 +130,10 @@ class Recipe(models.Model):
         help_text='Выберите рецепты для покупки',
         blank=True,
     )
+    times_added_to_favorite = models.IntegerField(default=0)
 
     def __str__(self):
-        return f'Рецепт "{self.name}"'
+        return self.name
 
 
 class RecipeIngredient(models.Model):
@@ -176,6 +177,19 @@ class Favorite(models.Model):
         null=False
     )
 
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            recipe = Recipe.objects.get(pk=self.favorite.pk)
+            recipe.times_added_to_favorite += 1
+            recipe.save()
+        super(Favorite, self).save()
+
+    def delete(self, *args, **kwargs):
+        recipe = Recipe.objects.get(pk=self.favorite.pk)
+        recipe.times_added_to_favorite -= 1
+        recipe.save()
+        super(Favorite, self).delete()
+
     class Meta:
         constraints = [models.UniqueConstraint(
             fields=['favorer', 'favorite'], name='unique_favorite'
@@ -204,3 +218,6 @@ class Cart(models.Model):
         constraints = [models.UniqueConstraint(
             fields=['buyer', 'purchase'], name='unique_purchase'
         )]
+
+    def __str__(self):
+        return f'Рецепт {self.purchase.name} в корзине {self.buyer.username}'

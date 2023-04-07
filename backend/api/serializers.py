@@ -27,7 +27,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         required=True,
         write_only=True
     )
-    is_subscribed = serializers.SerializerMethodField()
+    is_subscribed = serializers.BooleanField(required=False)
 
     class Meta:
         model = CustomUser
@@ -44,12 +44,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
-
-    def get_is_subscribed(self, obj):
-        return Follow.objects.filter(
-            user=obj,
-            following=self.context['request'].user
-        ).exists()
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -115,15 +109,16 @@ class ReadRecipeIngredientSerializer(serializers.ModelSerializer):
 class ReadRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для отображения рецептов."""
 
-    author = CustomUserSerializer()
+    author = CustomUserSerializer(source='annotated_author')
     image = Base64ImageField(required=True, allow_null=True)
     ingredients = ReadRecipeIngredientSerializer(
         many=True,
         source='recipe_ingredient'
     )
     tags = TagSerializer(many=True)
-    is_favorited = serializers.BooleanField()
-    is_in_shopping_cart = serializers.BooleanField()
+    is_favorited = serializers.BooleanField(required=False, allow_null=True)
+    is_in_shopping_cart = serializers.BooleanField(required=False,
+                                                   allow_null=True)
 
     class Meta:
         model = Recipe
@@ -220,9 +215,10 @@ class FollowSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField(source='following.username')
     first_name = serializers.ReadOnlyField(source='following.first_name')
     last_name = serializers.ReadOnlyField(source='following.last_name')
-    is_subscribed = serializers.SerializerMethodField()
-    recipes = RecipeMiniSerializer(many=True,
-                                   source='following.recipes')
+    is_subscribed = serializers.ReadOnlyField(source='following.is_subscribed')
+    # recipes = RecipeMiniSerializer(many=True,
+    #                                source='following.recipes')
+    recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -230,12 +226,9 @@ class FollowSerializer(serializers.ModelSerializer):
         fields = ('email', 'id', 'username', 'first_name', 'last_name',
                   'is_subscribed', 'recipes', 'recipes_count')
 
-    def get_is_subscribed(self, obj):
-        author = obj.following
-        return Follow.objects.filter(
-            user=author,
-            following=self.context['request'].user
-        ).exists()
+    def get_recipes(self, obj):
+        recipes = obj.following.recipes.all()[:3]
+        return RecipeMiniSerializer(recipes, many=True, read_only=True).data
 
     def get_recipes_count(self, obj):
         return obj.following.recipes.count()
@@ -260,6 +253,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
         """Проверка невозможности подписки на самого себя."""
 
         following = int(self.context['user_id'])
+        print(self.context)
         if following == self.context['request'].user.pk:
             raise serializers.ValidationError(
                 'Не допускается подписка на самого себя.'

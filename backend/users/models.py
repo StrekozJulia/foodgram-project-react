@@ -1,9 +1,17 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, AnonymousUser
 from django.db import models
 
 NAME_LEN = 150
 MAIL_LEN = 254
 PASS_LEN = 150
+
+
+# class AnonymousUser(AnonymousUser):
+#     username = ''
+#     first_name = ''
+#     last_name = ''
+#     password = ''
+#     is_subscribed = False
 
 
 class CustomUser(AbstractUser):
@@ -69,3 +77,6 @@ class Follow(models.Model):
         constraints = [models.UniqueConstraint(
             fields=['user', 'following'], name='unique_following'
         )]
+    
+    def __str__(self):
+        return f'Подписка {self.user} на {self.following}'
