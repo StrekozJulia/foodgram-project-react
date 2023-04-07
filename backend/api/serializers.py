@@ -1,17 +1,13 @@
-# import datetime
-from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 import base64
-from django.core.files.base import ContentFile
-from rest_framework.generics import get_object_or_404
 
+from django.core.files.base import ContentFile
+from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
+from rest_framework.validators import UniqueValidator
+
+from recipes.models import (Cart, Favorite, Ingredient, Recipe,
+                            RecipeIngredient, Tag)
 from users.models import CustomUser, Follow
-from recipes.models import (Tag,
-                            Ingredient,
-                            Recipe,
-                            RecipeIngredient,
-                            Favorite,
-                            Cart)
 
 
 class CustomUserSerializer(serializers.ModelSerializer):

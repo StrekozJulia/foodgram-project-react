@@ -1,6 +1,6 @@
 from django.db import models
-from users.models import CustomUser
 
+from users.models import CustomUser
 
 NAME_LEN = 200
 SLUG_LEN = 200
