@@ -7,10 +7,6 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from core.mixins import CreateDestroyMixin, ListMixin, ReadOnlyMixin, UserMixin
-from recipes.models import Cart, Favorite, Ingredient, Recipe, Tag
-from users.models import CustomUser, Follow
-
 from .filters import IngredientSearchFilter, RecipeFilter
 from .permissions import RecipePermission, UserPermission
 from .serializers import (CartSerializer, ChangePasswordSerializer,
@@ -18,6 +14,9 @@ from .serializers import (CartSerializer, ChangePasswordSerializer,
                           FollowSerializer, IngredientSerializer,
                           ReadRecipeSerializer, SubscribeSerializer,
                           TagSerializer, WriteRecipeSerializer)
+from core.mixins import CreateDestroyMixin, ListMixin, ReadOnlyMixin, UserMixin
+from recipes.models import Cart, Favorite, Ingredient, Recipe, Tag
+from users.models import CustomUser, Follow
 
 
 class CustomUserViewSet(UserMixin):
