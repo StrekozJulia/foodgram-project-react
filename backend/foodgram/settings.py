@@ -168,8 +168,8 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
-# CORS_URLS_REGEX = r'^/api/.*$'
+CORS_URLS_REGEX = r'^/api/.*$'
 
 # CORS_ALLOWED_ORIGINS = [
-#     'http://84.252.128.90:3000',
+#     'http://84.252.128.90:1',
 # ]
