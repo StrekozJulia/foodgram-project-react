@@ -25,6 +25,7 @@ services:
     volumes:
       - ../frontend/:/app/result_build/
   
+  
   nginx:
     image: nginx:1.19.3
     ports:
