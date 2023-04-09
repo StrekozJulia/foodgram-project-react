@@ -1,7 +1,5 @@
 # Проект Foodgram - «Продуктовый помощник».
 
-![foodgram_workflow](https://github.com/strekozjulia/foodgram_project_react/actions/workflows/foodgram.yml/badge.svg)
-
 Проект доступен по ссылке:
 [Foodgram_project](http:///84.252.128.90/)
 
