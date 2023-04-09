@@ -26,11 +26,15 @@ class CustomUserViewSet(UserMixin):
     permission_classes = [UserPermission, ]
 
     def get_queryset(self):
-        return CustomUser.objects.all().annotate(
-            is_subscribed=Exists(Follow.objects.filter(
-                user=self.request.user,
-                following=OuterRef('pk'))
+        if self.request.user.is_authenticated:
+            return CustomUser.objects.all().annotate(
+                is_subscribed=Exists(Follow.objects.filter(
+                    user=self.request.user,
+                    following=OuterRef('pk'))
+                )
             )
+        return CustomUser.objects.all().annotate(
+            is_subscribed=Value(False, output_field=BooleanField())
         )
 
     @action(["get"], detail=False,
