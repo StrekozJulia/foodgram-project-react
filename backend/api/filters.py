@@ -2,7 +2,7 @@ from django_filters import FilterSet, filters
 from recipes.models import Recipe, Tag
 from rest_framework.filters import SearchFilter
 
-TAG_LIST = [(mod.slug, mod.name) for mod in enumerate(Tag.objects.all())]
+TAG_LIST = [(mod[1].slug, mod[1].name) for mod in enumerate(Tag.objects.all())]
 
 
 class RecipeFilter(FilterSet):
