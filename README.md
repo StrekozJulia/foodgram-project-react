@@ -1,12 +1,12 @@
 # Проект Foodgram - «Продуктовый помощник».
 
-![yamdb_workflow](https://github.com/strekozjulia/foodgram_project_react/actions/workflows/foodgram.yml/badge.svg)
+![foodgram_workflow](https://github.com/strekozjulia/foodgram_project_react/actions/workflows/foodgram.yml/badge.svg)
 
 Проект доступен по ссылке:
-http:///84.252.128.90
+[Foodgram_project](http:///84.252.128.90/)
 
 API-документация к проекту доступна по ссылке:
-http:///84.252.128.90/api/docs/
+[Redoc-документация Foodgram_project](http:///84.252.128.90/api/docs/)
 
 ## Описание:
 На этом сервисе пользователи могут публиковать рецепты, подписываться на публикации других пользователей, добавлять понравившиеся рецепты в список «Избранное», а перед походом в магазин скачивать сводный список продуктов, необходимых для приготовления одного или нескольких выбранных блюд.
