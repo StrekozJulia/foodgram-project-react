@@ -24,7 +24,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         required=True,
         write_only=True
     )
-    is_subscribed = serializers.BooleanField(required=False)
+    is_subscribed = serializers.BooleanField()
 
     class Meta:
         model = CustomUser
