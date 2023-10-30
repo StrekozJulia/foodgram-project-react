@@ -1,11 +1,12 @@
-from django_filters import FilterSet, filters
 from recipes.models import Recipe, Tag
+from django_filters import FilterSet, filters
 from rest_framework.filters import SearchFilter
 
-TAG_LIST = [(mod[1].slug, mod[1].name) for mod in enumerate(Tag.objects.all())]
+TAG_LIST = [(mod.slug, mod.name) for mod in Tag.objects.all()]
 
 
 class RecipeFilter(FilterSet):
+    # name = filters.CharFilter(field_name='name', lookup_expr='contains')
     tags = filters.MultipleChoiceFilter(
         lookup_expr='slug',
         choices=TAG_LIST

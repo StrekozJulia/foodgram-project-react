@@ -1,23 +1,26 @@
-from core.mixins import CreateDestroyMixin, ListMixin, ReadOnlyMixin, UserMixin
-from django.db import transaction
-from django.db.models import BooleanField, Exists, OuterRef, Prefetch, Value
 from django.http import FileResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from recipes.models import Cart, Favorite, Ingredient, Recipe, Tag
+from django.db.models import Exists, OuterRef, Prefetch, Case, When, BooleanField, Value
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action, api_view
-from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
+from recipes.models import Tag, Ingredient, Recipe, Favorite, Cart
 from users.models import CustomUser, Follow
-
-from .filters import IngredientSearchFilter, RecipeFilter
-from .permissions import RecipePermission, UserPermission
-from .serializers import (CartSerializer, ChangePasswordSerializer,
-                          CustomUserSerializer, FavoriteSerializer,
-                          FollowSerializer, IngredientSerializer,
-                          ReadRecipeSerializer, SubscribeSerializer,
-                          TagSerializer, WriteRecipeSerializer)
+from core.mixins import UserMixin, ReadOnlyMixin, CreateDestroyMixin, ListMixin
+from .permissions import UserPermission, RecipePermission
+from .filters import RecipeFilter, IngredientSearchFilter
+from .serializers import (CustomUserSerializer,
+                          ChangePasswordSerializer,
+                          TagSerializer,
+                          IngredientSerializer,
+                          ReadRecipeSerializer,
+                          WriteRecipeSerializer,
+                          SubscribeSerializer,
+                          FollowSerializer,
+                          FavoriteSerializer,
+                          CartSerializer)
 
 
 class CustomUserViewSet(UserMixin):
@@ -26,16 +29,14 @@ class CustomUserViewSet(UserMixin):
     permission_classes = [UserPermission, ]
 
     def get_queryset(self):
-        if self.request.user.is_authenticated:
-            return CustomUser.objects.all().annotate(
-                is_subscribed=Exists(Follow.objects.filter(
-                    user=self.request.user,
-                    following=OuterRef('pk'))
-                )
+        queryset = CustomUser.objects.all().annotate(
+            is_subscribed=Exists(Follow.objects.filter(
+                user=self.request.user,
+                following=OuterRef('pk'))
             )
-        return CustomUser.objects.all().annotate(
-            is_subscribed=Value(False, output_field=BooleanField())
         )
+        return queryset
+
 
     @action(["get"], detail=False,
             permission_classes=[permissions.IsAuthenticated])
@@ -88,7 +89,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            return Recipe.objects.all().annotate(
+            queryset = Recipe.objects.all().annotate(
                 is_favorited=Exists(Favorite.objects.filter(
                     favorer=self.request.user,
                     favorite=OuterRef('pk'))
@@ -106,15 +107,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     )
                 ),
                 to_attr='annotated_author'))
-
-        return Recipe.objects.all().order_by(
-            '-pub_date'
-        ).prefetch_related(Prefetch(
-            'author',
-            queryset=CustomUser.objects.all().annotate(
-                is_subscribed=Value(False, output_field=BooleanField())
-            ),
-            to_attr='annotated_author'))
+        else:
+            queryset = Recipe.objects.all().order_by(
+                '-pub_date'
+            ).prefetch_related(Prefetch(
+                'author',
+                queryset=CustomUser.objects.all().annotate(
+                    is_subscribed=Value(False, output_field=BooleanField())
+                ),
+                to_attr='annotated_author'))
+        return queryset
 
     def get_serializer_class(self):
         if self.request.method in permissions.SAFE_METHODS:
@@ -149,7 +151,6 @@ class SubscribeViewSet(CreateDestroyMixin):
                 following=OuterRef('pk'))
             ))
 
-    @transaction.atomic
     def perform_create(self, serializer):
         user_id = self.kwargs.get("user_id")
         authors = self.get_user_queryset()
@@ -184,7 +185,6 @@ class FavoriteViewSet(CreateDestroyMixin):
     serializer_class = FavoriteSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
-    @transaction.atomic
     def perform_create(self, serializer):
         recipe_id = self.kwargs.get("recipe_id")
         favorite = get_object_or_404(Recipe, pk=recipe_id)
@@ -219,7 +219,6 @@ class CartViewSet(CreateDestroyMixin):
     serializer_class = CartSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
-    @transaction.atomic
     def perform_create(self, serializer):
         recipe_id = self.kwargs.get("recipe_id")
         purchase = get_object_or_404(Recipe, pk=recipe_id)
@@ -247,7 +246,6 @@ class CartViewSet(CreateDestroyMixin):
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
 @api_view(['GET', ])
 def download_purchase_list(request):
     """выводит список покупок в формате .pdf"""
@@ -270,9 +268,7 @@ def download_purchase_list(request):
 
     file_data = 'Список ингредиентов для покупки:\n'
     for elm in ingredient_dict:
-        file_data += (
-            f'- {elm} ({ingredient_dict[elm][1]}): {ingredient_dict[elm][0]}\n'
-        )
+        file_data += f'- {elm} ({ingredient_dict[elm][1]}): {ingredient_dict[elm][0]}\n'
     response = FileResponse(file_data,
                             status=status.HTTP_201_CREATED)
     response['Content-type'] = 'application/text charset=utf-8',

@@ -1,9 +1,16 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import (CartViewSet, CustomUserViewSet, FavoriteViewSet,
-                    IngredientViewSet, RecipeViewSet, SubscribeViewSet,
-                    SubscriptionsViewSet, TagViewSet, download_purchase_list)
+from .views import (CustomUserViewSet,
+                    TagViewSet,
+                    IngredientViewSet,
+                    RecipeViewSet,
+                    SubscribeViewSet,
+                    SubscriptionsViewSet,
+                    FavoriteViewSet,
+                    CartViewSet,
+                    download_purchase_list)
+
 
 app_name = 'api'
 

@@ -21,7 +21,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '7u_czp0ez*!o@byw1p#jpq4@=t0l3d!nyfk4=k@jfmcp&vb&c6'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -30,7 +30,6 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     'backend',
-    '84.252.128.90',
 ]
 
 
@@ -48,7 +47,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'corsheaders',
     'django_filters',
     'rest_framework.authtoken',
     'djoser',
@@ -57,7 +55,6 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -143,7 +140,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.AllowAny', 
     ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -163,13 +160,6 @@ DJOSER = {
 
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'AUTH_HEADER_TYPES': ('Bearer',),
+   'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+   'AUTH_HEADER_TYPES': ('Bearer',),
 }
-
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_URLS_REGEX = r'^/api/.*$'
-
-# CORS_ALLOWED_ORIGINS = [
-#     'http://84.252.128.90:1',
-# ]

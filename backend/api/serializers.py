@@ -1,14 +1,17 @@
-import base64
-
-from django.core.files.base import ContentFile
-from django.db import transaction
-from django.db.models import BooleanField, Prefetch, Value
-from recipes.models import (Cart, Favorite, Ingredient, Recipe,
-                            RecipeIngredient, Tag)
+# import datetime
 from rest_framework import serializers
-from rest_framework.generics import get_object_or_404
 from rest_framework.validators import UniqueValidator
+import base64
+from django.core.files.base import ContentFile
+from rest_framework.generics import get_object_or_404
+
 from users.models import CustomUser, Follow
+from recipes.models import (Tag,
+                            Ingredient,
+                            Recipe,
+                            RecipeIngredient,
+                            Favorite,
+                            Cart)
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -24,14 +27,13 @@ class CustomUserSerializer(serializers.ModelSerializer):
         required=True,
         write_only=True
     )
-    is_subscribed = serializers.BooleanField()
+    is_subscribed = serializers.BooleanField(required=False)
 
     class Meta:
         model = CustomUser
         fields = ('email', 'id', 'username',
                   'first_name', 'last_name', 'password', 'is_subscribed')
 
-    @transaction.atomic
     def create(self, validated_data):
         user = CustomUser(
             email=validated_data['email'],
@@ -143,7 +145,7 @@ class WriteRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для создания рецептов."""
 
     author = CustomUserSerializer(read_only=True)
-    image = Base64ImageField(required=False, allow_null=True)
+    image = Base64ImageField(required=True, allow_null=True)
     ingredients = WriteRecipeIngredientSerializer(
         many=True,
     )
@@ -156,7 +158,6 @@ class WriteRecipeSerializer(serializers.ModelSerializer):
         fields = ('name', 'author', 'ingredients', 'tags',
                   'image', 'text', 'cooking_time')
 
-    @transaction.atomic
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')
@@ -164,25 +165,19 @@ class WriteRecipeSerializer(serializers.ModelSerializer):
             author=self.context['request'].user,
             **validated_data
         )
-        for i in range(len(ingredients_data)):
-            RecipeIngredient.objects.bulk_create([RecipeIngredient(
+
+        for ingredient in ingredients_data:
+            RecipeIngredient.objects.create(
                 recipe=recipe_instance,
-                ingredient=ingredients_data[i]['ingredient'],
-                amount=ingredients_data[i]['amount']
-            )])
+                ingredient=ingredient['ingredient'],
+                amount=ingredient['amount']
+            )
 
         recipe_instance.tags.set(tags_data)
         recipe_instance.save()
-        annotated_queryset = Recipe.objects.all().prefetch_related(Prefetch(
-            'author',
-            queryset=CustomUser.objects.all().annotate(
-                is_subscribed=Value(False, output_field=BooleanField())
-            ),
-            to_attr='annotated_author'))
 
-        return annotated_queryset.get(pk=recipe_instance.pk)
+        return recipe_instance
 
-    @transaction.atomic
     def update(self, instance, validated_data):
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')
@@ -196,23 +191,17 @@ class WriteRecipeSerializer(serializers.ModelSerializer):
         for res_ingr in list_of_recipe_ingr:
             res_ingr.delete()
 
-        for i in range(len(ingredients_data)):
-            RecipeIngredient.objects.bulk_create([RecipeIngredient(
+        for ingredient in ingredients_data:
+            RecipeIngredient.objects.create(
                 recipe=self.instance,
-                ingredient=ingredients_data[i]['ingredient'],
-                amount=ingredients_data[i]['amount']
-            )])
+                ingredient=ingredient['ingredient'],
+                amount=ingredient['amount']
+            )
 
         instance.tags.set(tags_data)
         instance.save()
-        annotated_queryset = Recipe.objects.all().prefetch_related(Prefetch(
-            'author',
-            queryset=CustomUser.objects.all().annotate(
-                is_subscribed=Value(False, output_field=BooleanField())
-            ),
-            to_attr='annotated_author'))
 
-        return annotated_queryset.get(pk=instance.pk)
+        return self.instance
 
     def to_representation(self, instance):
         return ReadRecipeSerializer(instance=instance).data
@@ -227,6 +216,8 @@ class FollowSerializer(serializers.ModelSerializer):
     first_name = serializers.ReadOnlyField(source='following.first_name')
     last_name = serializers.ReadOnlyField(source='following.last_name')
     is_subscribed = serializers.ReadOnlyField(source='following.is_subscribed')
+    # recipes = RecipeMiniSerializer(many=True,
+    #                                source='following.recipes')
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 
